@@ -13,6 +13,10 @@ if [ -z "$PORT" ]; then
     echo "PORT not set"
     exit 1
 fi
+if [ -z "$SPRING_DATASOURCE_URL" ] || [ -z "$SPRING_DATASOURCE_USERNAME" ] || [ -z "$SPRING_DATASOURCE_PASSWORD" ]; then
+    echo "Database environment variables not set"
+    exit 1
+fi
 echo "JAVA_HOME set to $JAVA_HOME"
 echo "Starting on port $PORT"
 java -version
