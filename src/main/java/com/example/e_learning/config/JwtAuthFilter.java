@@ -34,7 +34,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         
         // Handle CORS preflight request
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
-            res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+            res.setHeader("Access-Control-Allow-Origin", "https://e-learning-management.netlify.app");
             res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
             res.setHeader("Access-Control-Allow-Credentials", "true");
