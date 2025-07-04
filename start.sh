@@ -6,7 +6,6 @@ for path in /usr/lib/jvm/java-21-openjdk-amd64 /usr/lib/jvm/jdk-21 /usr/lib/jvm/
         break
     fi
 done
-if [ -z "$JAVA_HOME" ]FAC0
 if [ -z "$JAVA_HOME" ] && command -v java >/dev/null 2>&1; then
     export JAVA_HOME=$(dirname $(dirname $(command -v java)))
     export PATH=$JAVA_HOME/bin:$PATH
