@@ -1,19 +1,17 @@
-# Maven
 target/
 *.jar
 *.jar.original
 .mvn/
 mvnw.cmd
 .mvn/wrapper/maven-wrapper.jar
-
-# IDEs and editors
+node_modules/
+package.json
+package-lock.json
 .idea/
 *.iml
 .vscode/
 .project
 .classpath
 .settings/
-
-# System files
 .DS_Store
 Thumbs.db
