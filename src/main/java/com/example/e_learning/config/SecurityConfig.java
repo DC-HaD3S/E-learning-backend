@@ -34,29 +34,23 @@ public class SecurityConfig {
     private JwtAuthFilter jwtAuthFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors().and() // ✅ enables cors using the bean below
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(
                     "/auth/login", "/auth/signup",
-                    "/feedback/course/{courseId}",
-                    "/feedback/course/{courseId}/average-rating",
-                    "/feedback/all",
-                    "/courses",
-                    "/auth/check-username",
-                    "/auth/check-email",
-                    "/swagger-ui/**",
-                    "/v3/api-docs/**"
+                    "/auth/check-username", "/auth/check-email",
+                    "/feedback/course/**", "/feedback/all",
+                    "/courses/**",
+                    "/swagger-ui/**", "/v3/api-docs/**"
                 ).permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // ✅ only JWT filter
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -64,10 +58,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("https://e-learning-management.netlify.app")); // ✅ Netlify frontend
+        config.setAllowedOriginPatterns(List.of("https://e-learning-management.netlify.app"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
-        config.setAllowCredentials(true); // ✅ required if using cookies or auth headers
+        config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -89,7 +84,7 @@ public class SecurityConfig {
         @PersistenceContext
         private EntityManager entityManager;
 
-        @Scheduled(fixedRate = 600000) // Every 10 minutes
+        @Scheduled(fixedRate = 600000)
         public void keepDatabaseAlive() {
             entityManager.createNativeQuery("SELECT 1").getSingleResult();
         }

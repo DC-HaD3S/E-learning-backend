@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -28,17 +29,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
-        System.out.println("JwtAuthFilter: Processing request: " + req.getMethod() + " " + req.getRequestURI() + 
-                           ", Origin: " + req.getHeader("Origin"));
-        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
-            System.out.println("JwtAuthFilter: Handling OPTIONS request for " + req.getRequestURI());
-            res.setHeader("Access-Control-Allow-Origin", "https://e-learning-management.netlify.app");
-            res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-            res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept");
-            res.setHeader("Access-Control-Max-Age", "3600");
-            res.setStatus(HttpServletResponse.SC_OK);
-            return;
-        }
+
+        // Log incoming request for debugging
+        System.out.println("[JwtAuthFilter] Request URI: " + req.getRequestURI() +
+                ", Method: " + req.getMethod() + ", Origin: " + req.getHeader("Origin"));
+
 
         String authHeader = req.getHeader("Authorization");
 
@@ -49,7 +44,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtService.isTokenValid(jwt)) {
                     String role = jwtService.extractClaim(jwt, claims -> claims.get("role", String.class));
-
                     if (role != null) {
                         var authorities = List.of(new SimpleGrantedAuthority(role));
                         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
@@ -61,7 +55,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
 
-        System.out.println("JwtAuthFilter: Proceeding with chain for " + req.getMethod() + " " + req.getRequestURI());
+        // Proceed with filter chain
         chain.doFilter(req, res);
     }
 }
