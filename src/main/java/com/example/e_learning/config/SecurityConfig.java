@@ -23,6 +23,7 @@ public class SecurityConfig {
                                                     JwtService jwtService,
                                                     UserDetailsService userDetailsService) throws Exception {
 
+        // ✅ Manually create JwtAuthFilter - don't inject it as a Spring bean
         JwtAuthFilter jwtAuthFilter = new JwtAuthFilter(jwtService, userDetailsService);
 
         http
