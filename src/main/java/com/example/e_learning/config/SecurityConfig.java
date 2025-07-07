@@ -1,5 +1,7 @@
 package com.example.e_learning.config;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,9 +17,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.stereotype.Component;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 
 @Configuration
 @EnableWebSecurity
@@ -36,10 +37,17 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/login", "/auth/signup", "/feedback/course/{courseId}", 
-                                "/feedback/course/{courseId}/average-rating", "/feedback/all", 
-                                "/courses", "/auth/check-username", "/auth/check-email", 
-                                "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers(
+                    "/auth/login", "/auth/signup",
+                    "/feedback/course/{courseId}",
+                    "/feedback/course/{courseId}/average-rating",
+                    "/feedback/all",
+                    "/courses",
+                    "/auth/check-username",
+                    "/auth/check-email",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**"
+                ).permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
             )
@@ -63,7 +71,7 @@ public class SecurityConfig {
     }
 
     @Component
-    public class KeepAliveTask {
+    public static class KeepAliveTask {
         @PersistenceContext
         private EntityManager entityManager;
 
