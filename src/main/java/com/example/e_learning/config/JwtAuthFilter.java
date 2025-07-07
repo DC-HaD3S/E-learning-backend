@@ -28,7 +28,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
-        System.out.println("JwtAuthFilter: Processing request: " + req.getMethod() + " " + req.getRequestURI());
+        System.out.println("JwtAuthFilter: Processing request: " + req.getMethod() + " " + req.getRequestURI() + 
+                           ", Origin: " + req.getHeader("Origin"));
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
             System.out.println("JwtAuthFilter: Handling OPTIONS request for " + req.getRequestURI());
             res.setHeader("Access-Control-Allow-Origin", "https://e-learning-management.netlify.app");
