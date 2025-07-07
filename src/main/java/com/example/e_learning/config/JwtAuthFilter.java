@@ -33,10 +33,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
     	
     	if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
-            chain.doFilter(req, res);
+            res.setHeader("Access-Control-Allow-Origin", "https://e-learning-management.netlify.app");
+            res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept");
+            res.setHeader("Access-Control-Max-Age", "3600");
+            res.setStatus(HttpServletResponse.SC_OK);
+            System.out.println("Handling OPTIONS request in JwtAuthFilter");
             return;
         }
-
+    	
         String authHeader = req.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
