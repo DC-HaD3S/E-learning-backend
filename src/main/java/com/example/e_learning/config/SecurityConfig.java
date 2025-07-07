@@ -2,7 +2,6 @@ package com.example.e_learning.config;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,10 +20,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import org.springframework.stereotype.Component;
-
 import java.util.List;
-
 
 @Configuration
 @EnableWebSecurity
@@ -32,8 +28,11 @@ import java.util.List;
 @EnableScheduling
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -41,7 +40,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // critical!
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(
                     "/auth/login", "/auth/signup",
                     "/auth/check-username", "/auth/check-email",
@@ -57,11 +56,10 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("https://e-learning-management.netlify.app"));
+        config.setAllowedOriginPatterns(List.of("https://*.netlify.app", "https://e-learning-management.netlify.app"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));
@@ -71,7 +69,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -83,7 +80,11 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    @Component
+    @Bean
+    public KeepAliveTask keepAliveTask() {
+        return new KeepAliveTask();
+    }
+
     public static class KeepAliveTask {
         @PersistenceContext
         private EntityManager entityManager;
