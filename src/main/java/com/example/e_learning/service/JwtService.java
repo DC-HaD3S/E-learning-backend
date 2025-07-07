@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import com.example.e_learning.repository.UserRepository;
+
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
@@ -35,14 +36,11 @@ public class JwtService {
     public String generateToken(String username) {
         var user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
-        String role = user.getRole();
-        if (role == null || role.trim().isEmpty()) {
-            role = "USER";
-        }
+        String role = user.getRole() != null && !user.getRole().trim().isEmpty() ? user.getRole() : "USER";
 
         return Jwts.builder()
-                .setSubject(username) // Use setSubject for username
-                .claim("role", role.toUpperCase()) // Store role without "ROLE_" prefix
+                .setSubject(username)
+                .claim("role", role.toUpperCase())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
