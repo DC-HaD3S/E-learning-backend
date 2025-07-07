@@ -58,15 +58,16 @@
 	    @Bean
 	    public CorsConfigurationSource corsConfigurationSource() {
 	        CorsConfiguration configuration = new CorsConfiguration();
-	        configuration.setAllowedOriginPatterns(Arrays.asList("*")); 
+	        configuration.setAllowedOrigins(Arrays.asList("https://e-learning-management.netlify.app")); // Explicitly allow your frontend
 	        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-	        configuration.setAllowedHeaders(Arrays.asList("*"));
+	        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+	        configuration.setExposedHeaders(Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Methods"));
 	        configuration.setAllowCredentials(false);
+	        configuration.setMaxAge(3600L); // Cache preflight response for 1 hour
 	        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 	        source.registerCorsConfiguration("/**", configuration);
 	        return source;
 	    }
-	
 	    @Bean
 	    public BCryptPasswordEncoder bCryptPasswordEncoder() {
 	        return new BCryptPasswordEncoder();
