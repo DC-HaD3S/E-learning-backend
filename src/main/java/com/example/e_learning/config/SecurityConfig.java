@@ -58,11 +58,10 @@
 	    @Bean
 	    public CorsConfigurationSource corsConfigurationSource() {
 	        CorsConfiguration configuration = new CorsConfiguration();
-	        configuration.setAllowedOriginPatterns(Arrays.asList("https://e-learning-management.netlify.app",
-	                "https://*.netlify.app")); 
+	        configuration.setAllowedOriginPatterns(Arrays.asList("*")); 
 	        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 	        configuration.setAllowedHeaders(Arrays.asList("*"));
-	        configuration.setAllowCredentials(true);
+	        configuration.setAllowCredentials(false);
 	        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 	        source.registerCorsConfiguration("/**", configuration);
 	        return source;
