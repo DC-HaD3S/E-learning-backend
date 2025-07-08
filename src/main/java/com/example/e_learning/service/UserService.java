@@ -1,18 +1,19 @@
 package com.example.e_learning.service;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.e_learning.dto.SignupRequest;
 import com.example.e_learning.dto.UserDTO;
 import com.example.e_learning.entity.User;
 import com.example.e_learning.repository.UserRepository;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -20,11 +21,11 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
-
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final BCryptPasswordEncoder passwordEncoder;
+  
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -37,7 +38,6 @@ public class UserService implements UserDetailsService {
         if (userRepository.findByEmail(signupRequest.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already registered");
         }
-
         if (signupRequest.getUsername() == null || signupRequest.getUsername().trim().isEmpty()) {
             throw new IllegalArgumentException("Username cannot be empty");
         }
@@ -47,10 +47,9 @@ public class UserService implements UserDetailsService {
         if (signupRequest.getEmail() == null || signupRequest.getEmail().trim().isEmpty()) {
             throw new IllegalArgumentException("Email cannot be empty");
         }
-
         String role = signupRequest.getRole();
         if (role == null || role.trim().isEmpty()) {
-            role = "USER";
+            role = "USER"; 
         } else if (!role.equals("USER") && !role.equals("ADMIN")) {
             throw new IllegalArgumentException("Invalid role: must be 'USER' or 'ADMIN'");
         } else if (role.equals("ADMIN")) {
@@ -63,7 +62,6 @@ public class UserService implements UserDetailsService {
         user.setUsername(signupRequest.getUsername());
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         user.setRole(role);
-
         try {
             userRepository.save(user);
         } catch (Exception e) {
@@ -82,14 +80,16 @@ public class UserService implements UserDetailsService {
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(user -> {
             UserDTO dto = new UserDTO();
-            dto.setId(user.getId());
+            dto.setId(user.getId()); 
             dto.setName(user.getName());
             dto.setEmail(user.getEmail());
             dto.setUsername(user.getUsername());
-            dto.setPassword(user.getPassword());
+            dto.setPassword(user.getPassword()); 
             return dto;
         }).collect(Collectors.toList());
     }
+
+
 
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
@@ -103,18 +103,14 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
-
         if (user.getRole() == null || user.getRole().trim().isEmpty()) {
             throw new IllegalStateException("User role cannot be empty for username: " + username);
         }
-
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().toUpperCase()))
-        );
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().toUpperCase())));
     }
-
     @Transactional
     public void updateUserDetails(String email, UserDTO updatedUser) {
         User user = userRepository.findByEmail(email)
@@ -122,7 +118,6 @@ public class UserService implements UserDetailsService {
 
         user.setName(updatedUser.getName());
         user.setUsername(updatedUser.getUsername());
-
         if (!updatedUser.getEmail().equals(user.getEmail())) {
             throw new IllegalArgumentException("Email updates are not allowed.");
         }
@@ -140,4 +135,5 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         userRepository.delete(user);
     }
+
 }
