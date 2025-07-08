@@ -18,7 +18,7 @@ import java.util.function.Function;
 public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
-
+//for deploying..
     @Value("${jwt.expiration:86400000}")
     private long expiration;
 
