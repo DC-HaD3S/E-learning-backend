@@ -18,10 +18,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
+    private JwtAuthFilter jwtAuthFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                  UserDetailsService userDetailsService,
-                                                  JwtAuthFilter jwtAuthFilter) throws Exception {
+                                                  UserDetailsService userDetailsService) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
@@ -54,6 +55,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthFilter jwtAuthFilter(JwtService jwtService, UserDetailsService userDetailsService) {
-        return new JwtAuthFilter(jwtService, userDetailsService);
+        this.jwtAuthFilter = new JwtAuthFilter(jwtService, userDetailsService);
+        return this.jwtAuthFilter;
     }
 }
