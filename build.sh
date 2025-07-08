@@ -18,4 +18,14 @@ if ! command -v java >/dev/null 2>&1 || ! java -version 2>&1 | grep -q "21"; the
 fi
 echo "JAVA_HOME set to $JAVA_HOME"
 java -version || { echo "Java not found after setup"; exit 1; }
-echo "Skipping Maven build, using pre-built JAR"
+
+echo "Installing Maven..."
+curl -L -o maven.tar.gz https://downloads.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
+tar -xzf maven.tar.gz
+mv apache-maven-3.9.9 maven
+export PATH=$(pwd)/maven/bin:$PATH
+rm maven.tar.gz
+mvn --version || { echo "Maven not found after setup"; exit 1; }
+
+echo "Building with Maven..."
+mvn clean package || { echo "Maven build failed"; exit 1; }
