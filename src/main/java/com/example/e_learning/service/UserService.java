@@ -4,13 +4,12 @@ import com.example.e_learning.dto.SignupRequest;
 import com.example.e_learning.dto.UserDTO;
 import com.example.e_learning.entity.User;
 import com.example.e_learning.repository.UserRepository;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,16 +22,15 @@ import java.util.stream.Collectors;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
-//c
+
     @Transactional
     public void registerUser(SignupRequest signupRequest) {
-        // Pre-checks
         if (userRepository.findByUsername(signupRequest.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already registered");
         }
