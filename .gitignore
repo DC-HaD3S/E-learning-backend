@@ -16,4 +16,3 @@ requirements.txt
 .settings/
 .DS_Store
 Thumbs.db
-/target/
