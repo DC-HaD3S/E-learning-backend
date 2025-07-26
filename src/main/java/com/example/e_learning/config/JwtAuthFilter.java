@@ -31,22 +31,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
-        
-        // Handle CORS preflight request
-        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
-            res.setHeader("Access-Control-Allow-Origin", "https://e-learning-management.netlify.app");
-            res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-            res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
-            res.setHeader("Access-Control-Allow-Credentials", "true");
-            res.setStatus(HttpServletResponse.SC_OK);
-            return;
-        }
-
         String authHeader = req.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String jwt = authHeader.substring(7);
             String username = jwtService.extractUsername(jwt);
-
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtService.isTokenValid(jwt)) {
                     String role = jwtService.extractClaim(jwt, claims -> claims.get("role", String.class));
@@ -60,7 +48,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
         }
-
         chain.doFilter(req, res);
     }
 }
