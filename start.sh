@@ -6,6 +6,7 @@ if [ -d "$(pwd)/jdk-21.0.2" ]; then
 fi
 export PATH=$JAVA_HOME/bin:$PATH
 
+
 # Check if Java is available
 if ! command -v java >/dev/null 2>&1; then
     echo "Error: Java not found in $JAVA_HOME/bin"
