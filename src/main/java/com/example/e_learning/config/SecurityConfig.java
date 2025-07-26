@@ -28,18 +28,21 @@ public class SecurityConfig {
     @Autowired
     @Lazy
     private JwtAuthFilter jwtAuthFilter;
-    
+
     @Autowired
-    private CorsFilter corsFilter; 
+    private CorsFilter corsFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         System.out.println("Configuring security filter chain");
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .cors(cors -> {
+                System.out.println("Applying CORS configuration");
+                cors.configurationSource(corsConfigurationSource());
+            })
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> {
-                System.out.println("Permitting /courses and /courses/highest-enrolled-users-count");
+                System.out.println("Permitting endpoints: /courses, /courses/highest-enrolled-users-count, etc.");
                 auth
                     .requestMatchers(
                         "/auth/login",
@@ -60,7 +63,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            .addFilterBefore(corsFilter, JwtAuthFilter.class) // CorsFilter before JwtAuthFilter
+            .addFilterBefore(corsFilter, JwtAuthFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -73,6 +76,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
         System.out.println("CORS configured for https://e-learning-management.netlify.app");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -86,6 +90,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        System.out.println("Configuring AuthenticationManager");
         return authConfig.getAuthenticationManager();
     }
 }
