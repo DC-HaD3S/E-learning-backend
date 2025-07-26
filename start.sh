@@ -1,11 +1,18 @@
 #!/bin/bash
-# Set JAVA_HOME to the provided JDK 21.0.2 directory
-export JAVA_HOME=$(pwd)/jdk-21.0.2
+# Set JAVA_HOME to Render's JDK or bundled JDK
+export JAVA_HOME=${JAVA_HOME:-/opt/render/jdk-21}
+if [ -d "$(pwd)/jdk-21.0.2" ]; then
+    export JAVA_HOME=$(pwd)/jdk-21.0.2
+fi
 export PATH=$JAVA_HOME/bin:$PATH
 
 # Check if Java is available
 if ! command -v java >/dev/null 2>&1; then
     echo "Error: Java not found in $JAVA_HOME/bin"
+    exit 1
+fi
+if ! command -v javac >/dev/null 2>&1; then
+    echo "Error: javac not found in $JAVA_HOME/bin. JAVA_HOME must point to a JDK, not a JRE"
     exit 1
 fi
 
@@ -24,7 +31,7 @@ if [ -z "$SPRING_DATASOURCE_URL" ] || [ -z "$SPRING_DATASOURCE_USERNAME" ] || [ 
 fi
 
 # Check if JAR file exists
-JAR_FILE="artifacts/e-learning-0.0.1-SNAPSHOT.jar"
+JAR_FILE="target/e-learning-0.0.1-SNAPSHOT.jar"
 if [ ! -f "$JAR_FILE" ]; then
     echo "Error: JAR file $JAR_FILE not found"
     exit 1
