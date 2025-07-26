@@ -38,14 +38,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> {
                 System.out.println("Permitting endpoints: /auth/**, /courses, /courses/highest-enrolled-users-count, etc.");
                 auth
-                    .requestMatchers(
-                        "/auth/**",
-                        "/courses",
-                        "/courses/highest-enrolled-users-count",
-                        "/feedback/**",
-                        "/swagger-ui/**",
-                        "/v3/api-docs/**"
-                    ).permitAll()
+                    .requestMatchers("/auth/login","/instructor/{instructorId}/courses","/instructor/proxy-image","/instructor/{instructorId}/highest-enrolled-courses","/feedback/highest-rated-courses","/courses/highest-enrolled-users-count","/instructor/{instructorId}/enrollment-count","/courses/{courseId}/enrollment-count","/instructor/{instructorId}","/feedback/instructor/{instructorId}/feedback-count", "/auth/signup","/feedback/course/{courseId}","/feedback/course/{courseId}/average-rating","/feedback/all","instructor/average-rating", "/courses", "/auth/check-username", "/auth/check-email", "/swagger-ui/**", "/v3/api-docs/**")
+                    .permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .anyRequest().authenticated();
             })
