@@ -20,10 +20,15 @@ import com.example.e_learning.service.JwtService;
 import com.example.e_learning.service.UserService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
+import java.util.Map;
 
-
-@Tag(name = "auth")
+@Tag(name = "auth", description = "Authentication and user registration endpoints")
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -32,13 +37,27 @@ public class AuthController {
     @Autowired private JwtService jwtService;
     @Autowired private UserService userService;
 
+    @Operation(
+        summary = "User login",
+        description = "Authenticates a user with username and password, returning a JWT token upon successful authentication.",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Authentication successful, JWT token returned", 
+                         content = @Content(mediaType = "application/json", schema = @Schema(implementation = JwtResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: Incorrect username or password", 
+                         content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class))),
+            @ApiResponse(responseCode = "500", description = "Server error", 
+                         content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class)))
+        }
+    )
     @PostMapping("/login")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest request) {
+    public ResponseEntity<?> createAuthenticationToken(@Valid @RequestBody 
+        @Parameter(description = "Login credentials containing username and password", required = true) 
+        JwtRequest request) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect username or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Incorrect username or password"));
         }
 
         final UserDetails userDetails = userService.loadUserByUsername(request.getUsername());
@@ -46,31 +65,69 @@ public class AuthController {
         return ResponseEntity.ok(new JwtResponse(jwt));
     }
 
+    @Operation(
+        summary = "User registration",
+        description = "Registers a new user with provided details (name, email, username, password). Role is set to USER by default.",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "User registered successfully", 
+                         content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class))),
+            @ApiResponse(responseCode = "409", description = "Conflict: Username or email already registered", 
+                         content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class))),
+            @ApiResponse(responseCode = "500", description = "Server error", 
+                         content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class)))
+        }
+    )
     @PostMapping("/signup")
-    public ResponseEntity<String> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
+    public ResponseEntity<Map<String, String>> registerUser(@Valid @RequestBody 
+        @Parameter(description = "User registration details", required = true) 
+        SignupRequest signupRequest) {
         try {
             userService.registerUser(signupRequest);
-            return ResponseEntity.ok("User registered successfully");
+            return ResponseEntity.ok(Map.of("message", "User registered successfully"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Registration failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Registration failed: " + e.getMessage()));
         }
     }
 
+    @Operation(
+        summary = "Check username availability",
+        description = "Checks if a username is available for registration.",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Username is available", 
+                         content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class))),
+            @ApiResponse(responseCode = "409", description = "Username already registered", 
+                         content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class)))
+        }
+    )
     @GetMapping("/check-username")
-    public ResponseEntity<String> checkUsername(@RequestParam String username) {
+    public ResponseEntity<Map<String, String>> checkUsername(
+        @Parameter(description = "Username to check for availability", required = true) 
+        @RequestParam String username) {
         if (userService.findByUsername(username).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already registered");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "Username already registered"));
         }
-        return ResponseEntity.ok("Username is available");
+        return ResponseEntity.ok(Map.of("message", "Username is available"));
     }
 
-    @GetMapping("/check-email")
-    public ResponseEntity<String> checkEmail(@RequestParam String email) {
-        if (userService.findByEmail(email).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already registered");
+    @Operation(
+        summary = "Check email availability",
+        description = "Checks if an email is available for registration.",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Email is available", 
+                         content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class))),
+            @ApiResponse(responseCode = "409", description = "Email already registered", 
+                         content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class)))
         }
-        return ResponseEntity.ok("Email is available");
+    )
+    @GetMapping("/check-email")
+    public ResponseEntity<Map<String, String>> checkEmail(
+        @Parameter(description = "Email to check for availability", required = true) 
+        @RequestParam String email) {
+        if (userService.findByEmail(email).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "Email already registered"));
+        }
+        return ResponseEntity.ok(Map.of("message", "Email is available"));
     }
 }

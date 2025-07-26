@@ -22,8 +22,20 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Feedback> feedbacks;
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InstructorApplication> instructorApplications;
+    
 
-    public Long getId() {
+    public List<InstructorApplication> getInstructorApplications() {
+		return instructorApplications;
+	}
+
+	public void setInstructorApplications(List<InstructorApplication> instructorApplications) {
+		this.instructorApplications = instructorApplications;
+	}
+
+	public Long getId() {
         return id;
     }
 

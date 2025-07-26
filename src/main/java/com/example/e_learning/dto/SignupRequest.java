@@ -2,7 +2,6 @@ package com.example.e_learning.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 
 public class SignupRequest {
     @NotBlank(message = "Name cannot be empty")
@@ -14,9 +13,6 @@ public class SignupRequest {
     private String username;
     @NotBlank(message = "Password cannot be empty")
     private String password;
-    @NotBlank(message = "Role cannot be empty")
-    @Pattern(regexp = "USER|ADMIN", message = "Role must be either 'USER' or 'ADMIN'")
-    private String role;
 
     public String getName() {
         return name;
@@ -48,13 +44,5 @@ public class SignupRequest {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 }

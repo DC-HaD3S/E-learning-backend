@@ -5,19 +5,26 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "course") 
+@Table(name = "course")
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String title;
     private String body;
     @Column(name = "imageUrl", columnDefinition = "TEXT")
     private String imageUrl;
     private double price;
+
+    @ManyToOne
+    @JoinColumn(name = "instructor_id")
+    private InstructorApplication instructor;
 
     public Long getId() {
         return id;
@@ -57,5 +64,13 @@ public class Course {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public InstructorApplication getInstructor() {
+        return instructor;
+    }
+
+    public void setInstructor(InstructorApplication instructor) {
+        this.instructor = instructor;
     }
 }

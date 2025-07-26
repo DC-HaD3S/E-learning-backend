@@ -6,20 +6,32 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Column;
 
 @Entity
 public class InstructorApplication {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
     private String email;
+    @Column(length = 300)
     private String qualifications;
     private int experience;
+    @Column(length = 300)
     private String courses;
-    
+    private boolean approved;
+    @Column(length = 3000)
+    private String photoUrl;
+    @Column(columnDefinition = "TEXT")
+    private String aboutMe;
+    @Column(length = 3000)
+    private String twitterUrl;
+    @Column(length = 3000)
+    private String githubUrl;
 
-	@ManyToOne
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -64,18 +76,57 @@ public class InstructorApplication {
         this.experience = experience;
     }
 
+    public String getCourses() {
+        return courses;
+    }
+    public void setCourses(String courses) {
+        this.courses = courses;
+    }
+
+    public boolean isApproved() {
+        return approved;
+    }
+
+    public void setApproved(boolean approved) {
+        this.approved = approved;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
+    public String getAboutMe() {
+        return aboutMe;
+    }
+
+    public void setAboutMe(String aboutMe) {
+        this.aboutMe = aboutMe;
+    }
+
+    public String getTwitterUrl() {
+        return twitterUrl;
+    }
+
+    public void setTwitterUrl(String twitterUrl) {
+        this.twitterUrl = twitterUrl;
+    }
+
+    public String getGithubUrl() {
+        return githubUrl;
+    }
+
+    public void setGithubUrl(String githubUrl) {
+        this.githubUrl = githubUrl;
+    }
+
     public User getUser() {
         return user;
     }
 
     public void setUser(User user) {
         this.user = user;
-    }
-    public void setCourses(String courses) {
-		this.courses = courses;
-	}
-
-	public String getCourses() {
-		return courses;
-	}
-}
+    }}

@@ -7,8 +7,18 @@ public class UserDTO {
     private String email;
     private String username;
     private String password;
+    private String role;
 
-    public String getPassword() {
+
+    public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
+	public String getPassword() {
         return password;
     }
 
