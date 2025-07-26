@@ -1,10 +1,9 @@
 package com.example.e_learning.config;
 
-import com.example.e_learning.repository.UserRepository;
 import com.example.e_learning.service.JwtService;
-import com.example.e_learning.service.UserService;
-
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,10 +20,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-public class SecurityConfig {  // Remove @RequiredArgsConstructor
+public class SecurityConfig {
 
-    // Remove the UserDetailsService field
     private JwtAuthFilter jwtAuthFilter;
+
+    // Setter injection instead of constructor injection
+    @Autowired
+    public void setJwtAuthFilter(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -35,31 +39,9 @@ public class SecurityConfig {  // Remove @RequiredArgsConstructor
                 .requestMatchers("/auth/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);  // Use method call
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public JwtAuthFilter jwtAuthFilter() {
-        return new JwtAuthFilter(jwtService(), userDetailsService());
-    }
-
-    @Bean
-    public JwtService jwtService() {
-        return new JwtService();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return new UserService(userRepository(), passwordEncoder());
-    }
-
-    // Add these dummy beans - they should be properly defined elsewhere
-    @Bean
-    public UserRepository userRepository() {
-        // This should be your actual repository implementation
-        return null;
     }
 
     @Bean
