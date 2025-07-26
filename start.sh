@@ -32,7 +32,7 @@ if [ -z "$SPRING_DATASOURCE_URL" ] || [ -z "$SPRING_DATASOURCE_USERNAME" ] || [ 
 fi
 
 # Check if JAR file exists
-JAR_FILE="target/e-learning-0.0.1-SNAPSHOT.jar"
+JAR_FILE="artifacts/e-learning-0.0.1-SNAPSHOT.jar"
 if [ ! -f "$JAR_FILE" ]; then
     echo "Error: JAR file $JAR_FILE not found"
     exit 1
