@@ -27,17 +27,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserDetailsService userDetailsService;
-
+    
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
         String authHeader = req.getHeader("Authorization");
+        System.out.println("JwtAuthFilter: Processing request " + req.getRequestURI() + " with Authorization: " + authHeader);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String jwt = authHeader.substring(7);
             String username = jwtService.extractUsername(jwt);
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtService.isTokenValid(jwt)) {
                     String role = jwtService.extractClaim(jwt, claims -> claims.get("role", String.class));
+                    System.out.println("JwtAuthFilter: Valid token for user " + username + " with role " + role);
                     if (role != null) {
                         var authorities = List.of(new SimpleGrantedAuthority(role));
                         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
@@ -45,8 +47,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
                         SecurityContextHolder.getContext().setAuthentication(auth);
                     }
+                } else {
+                    System.out.println("JwtAuthFilter: Invalid token for user " + username);
                 }
             }
+        } else {
+            System.out.println("JwtAuthFilter: No Authorization header for " + req.getRequestURI());
         }
         chain.doFilter(req, res);
     }
