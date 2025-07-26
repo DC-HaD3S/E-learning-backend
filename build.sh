@@ -1,7 +1,22 @@
 #!/bin/bash
-# Set JAVA_HOME
-export JAVA_HOME=${JAVA_HOME:-$(pwd)/jdk-21.0.2}
-export PATH=$JAVA_HOME/bin:$PATH
+# Download and set up OpenJDK 21 if not present
+if ! command -v java >/dev/null 2>&1 || ! java -version 2>&1 | grep -q "21"; then
+    echo "Downloading OpenJDK 21..."
+    curl -L -o openjdk.tar.gz https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.2%2B13/OpenJDK21U-jdk_x64_linux_hotspot_21.0.2_13.tar.gz
+    if [ $? -ne 0 ]; then
+        echo "Failed to download OpenJDK 21"
+        exit 1
+    fi
+    tar -xzf openjdk.tar.gz
+    if [ $? -ne 0 ]; then
+        echo "Failed to extract OpenJDK 21"
+        exit 1
+    fi
+    mv jdk-21.0.2+13 jdk-21.0.2
+    export JAVA_HOME=$(pwd)/jdk-21.0.2
+    export PATH=$JAVA_HOME/bin:$PATH
+    rm openjdk.tar.gz
+fi
 
 # Check Java
 if ! command -v java >/dev/null 2>&1; then
@@ -13,32 +28,22 @@ if ! command -v javac >/dev/null 2>&1; then
     exit 1
 fi
 
-# Verify environment variables
-if [ -z "$JWT_SECRET" ]; then
-    echo "Error: JWT_SECRET not set"
-    exit 1
-fi
-if [ -z "$PORT" ]; then
-    echo "Error: PORT not set"
-    exit 1
-fi
-if [ -z "$SPRING_DATASOURCE_URL" ] || [ -z "$SPRING_DATASOURCE_USERNAME" ] || [ -z "$SPRING_DATASOURCE_PASSWORD" ]; then
-    echo "Error: Database environment variables not set"
-    exit 1
-fi
-
-# Check JAR
-JAR_FILE="target/e-learning-0.0.1-SNAPSHOT.jar"
-if [ ! -f "$JAR_FILE" ]; then
-    echo "Error: JAR file $JAR_FILE not found"
-    exit 1
-fi
-
-# Log setup
+# Log Java version
 echo "JAVA_HOME set to $JAVA_HOME"
-echo "Java version:"
-java -version
-echo "Starting application on port $PORT with JAR $JAR_FILE"
+java -version || { echo "Java not found after setup"; exit 1; }
 
-# Run application
-java -jar $JAR_FILE --server.port=$PORT
+# Copy pre-built JAR to target/
+PREBUILT_JAR="artifacts/e-learning-0.0.1-SNAPSHOT.jar"
+TARGET_JAR="target/e-learning-0.0.1-SNAPSHOT.jar"
+if [ ! -f "$PREBUILT_JAR" ]; then
+    echo "Error: Pre-built JAR $PREBUILT_JAR not found"
+    exit 1
+fi
+mkdir -p target
+cp "$PREBUILT_JAR" "$TARGET_JAR"
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to copy $PREBUILT_JAR to $TARGET_JAR"
+    exit 1
+fi
+
+echo "Pre-built JAR copied to $TARGET_JAR"
