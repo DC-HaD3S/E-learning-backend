@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: e-learning-ygsb
+    env: java
+    plan: free
+    buildCommand: ./mvnw clean install -DskipTests
+    startCommand: bash start.sh
+    envVars:
+      - key: JAVA_HOME
+        value: /opt/render/jdk-21
+      - key: JWT_SECRET
+        fromService: true
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase: true
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase: true
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase: true
+      - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+        value: org.postgresql.Driver
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
