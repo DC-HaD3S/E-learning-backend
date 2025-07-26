@@ -28,33 +28,41 @@ public class SecurityConfig {
     @Autowired
     @Lazy
     private JwtAuthFilter jwtAuthFilter;
+    
+    @Autowired
+    private CorsFilter corsFilter; 
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("Configuring security filter chain");
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/auth/login",
-                    "/auth/signup",
-                    "/feedback/course/{courseId}",
-                    "/feedback/course/{courseId}/average-rating",
-                    "/feedback/all",
-                    "/courses",
-                    "/courses/highest-enrolled-users-count", // Add this
-                    "/auth/check-username",
-                    "/auth/check-email",
-                    "/swagger-ui/**",
-                    "/v3/api-docs/**"
-                ).permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .anyRequest().authenticated()
-            )
+            .authorizeHttpRequests(auth -> {
+                System.out.println("Permitting /courses and /courses/highest-enrolled-users-count");
+                auth
+                    .requestMatchers(
+                        "/auth/login",
+                        "/auth/signup",
+                        "/feedback/course/{courseId}",
+                        "/feedback/course/{courseId}/average-rating",
+                        "/feedback/all",
+                        "/courses",
+                        "/courses/highest-enrolled-users-count",
+                        "/auth/check-username",
+                        "/auth/check-email",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**"
+                    ).permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .anyRequest().authenticated();
+            })
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
+            .addFilterBefore(corsFilter, JwtAuthFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        
 
         return http.build();
     }
