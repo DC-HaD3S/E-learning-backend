@@ -25,7 +25,7 @@ public class SecurityConfig {
 
     // Setter injection with @Lazy to break circular dependency
     @Autowired
-    public void setJwtAuthFilter(@Lazy JwtAuthFilter jwtAuthFilter) {
+    public void setJwtAuthFilter(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
@@ -52,16 +52,6 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean
