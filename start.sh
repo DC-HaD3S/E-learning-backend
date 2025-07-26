@@ -1,9 +1,6 @@
 #!/bin/bash
 # Set JAVA_HOME to Render's JDK or bundled JDK
-export JAVA_HOME=${JAVA_HOME:-/opt/render/jdk-21}
-if [ -d "$(pwd)/jdk-21.0.2" ]; then
-    export JAVA_HOME=$(pwd)/jdk-21.0.2
-fi
+export JAVA_HOME=$(pwd)/jdk-21.0.2
 export PATH=$JAVA_HOME/bin:$PATH
 
 
@@ -32,7 +29,7 @@ if [ -z "$SPRING_DATASOURCE_URL" ] || [ -z "$SPRING_DATASOURCE_USERNAME" ] || [ 
 fi
 
 # Check if JAR file exists
-JAR_FILE="artifacts/e-learning-0.0.1-SNAPSHOT.jar"
+JAR_FILE="target/e-learning-0.0.1-SNAPSHOT.jar"
 if [ ! -f "$JAR_FILE" ]; then
     echo "Error: JAR file $JAR_FILE not found"
     exit 1
