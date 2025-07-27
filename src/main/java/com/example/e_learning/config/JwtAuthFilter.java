@@ -33,20 +33,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
-        // Set CORS headers for all responses
         res.setHeader("Access-Control-Allow-Origin", "https://e-learning-management.netlify.app");
         res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         res.setHeader("Access-Control-Allow-Headers", "*");
         res.setHeader("Access-Control-Allow-Credentials", "true");
 
-        // Handle CORS preflight request
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
             res.setStatus(HttpServletResponse.SC_OK);
             logger.debug("Handled CORS preflight request for {}", req.getRequestURI());
             return;
         }
 
-        // Skip JWT processing for public endpoints
         String path = req.getRequestURI();
         if (isPublicEndpoint(path)) {
             logger.debug("Skipping JWT processing for public endpoint: {}", path);

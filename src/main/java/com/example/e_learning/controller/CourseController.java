@@ -308,7 +308,7 @@ public class CourseController {
                          content = @Content(mediaType = "application/json", schema = @Schema(implementation = EnrollmentDTO.class, type = "array")))
         }
     )
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'INSTRUCTOR', 'ADMIN')")
     @GetMapping("/enrolled-courses")
     public ResponseEntity<List<EnrollmentDTO>> getEnrolled(
         @Parameter(description = "Authenticated user's principal", hidden = true) 
