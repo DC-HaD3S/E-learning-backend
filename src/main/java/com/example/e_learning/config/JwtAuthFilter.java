@@ -57,24 +57,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String authHeader = req.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String jwt = authHeader.substring(7);
-            String username = jwtService.extractUsername(jwt);
-
-            if (username == null) {
-                logger.warn("No username extracted from JWT for path: {}", path);
-            } else if (!jwtService.isTokenValid(jwt)) {
-                logger.warn("Invalid or expired JWT for user: {} on path: {}", username, path);
-            } else if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                String role = jwtService.extractClaim(jwt, claims -> claims.get("role", String.class));
-                if (role != null) {
-                    var authorities = List.of(new SimpleGrantedAuthority(role));
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                            username, null, authorities);
-                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                    logger.debug("Authenticated user: {} with role: {} for path: {}", username, role, path);
-                } else {
-                    logger.warn("No role found in JWT for user: {} on path: {}", username, path);
+            try {
+                String username = jwtService.extractUsername(jwt);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    String role = jwtService.extractClaim(jwt, claims -> claims.get("role", String.class));
+                    if (role != null && jwtService.isTokenValid(jwt)) {
+                        var authorities = List.of(new SimpleGrantedAuthority(role));
+                        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                                username, null, authorities);
+                        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                        logger.debug("Authenticated user: {} with role: {} for path: {}", username, role, path);
+                    } else {
+                        logger.warn("No role found or invalid JWT for user: {} on path: {}", username, path);
+                    }
                 }
+            } catch (Exception e) {
+                logger.warn("JWT processing error for path: {}: {}", path, e.getMessage());
             }
         } else {
             logger.debug("No valid Authorization header for path: {}", path);
@@ -85,12 +84,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private boolean isPublicEndpoint(String path) {
         String[] publicEndpoints = {
-            "/auth/login", "/auth/signup", "/auth/check-username", "/auth/check-email",
-            "/courses", "/courses/highest-enrolled-users-count",
-            "/instructor/**", "/feedback/**", "/swagger-ui/**", "/v3/api-docs/**", "/test/**","/admin/add-bcrypt-prefix"
+            "/auth/login",
+            "/auth/signup",
+            "/auth/check-username",
+            "/auth/check-email",
+            "/courses",
+            "/courses/highest-enrolled-users-count",
+            "/instructor/",
+            "/feedback/",
+            "/swagger-ui/",
+            "/v3/api-docs/",
+            "/test/",
+            "/admin/add-bcrypt-prefix"
         };
         for (String endpoint : publicEndpoints) {
-            if (path.startsWith(endpoint)) {
+            if (path.equals(endpoint) || path.startsWith(endpoint + "/")) {
                 return true;
             }
         }

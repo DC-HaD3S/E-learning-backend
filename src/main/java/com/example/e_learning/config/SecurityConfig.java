@@ -33,11 +33,31 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/auth/login","/admin/add-bcrypt-prefix","/instructor/{instructorId}/courses","/instructor/proxy-image","/instructor/{instructorId}/highest-enrolled-courses","/feedback/highest-rated-courses","/courses/highest-enrolled-users-count","/instructor/{instructorId}/enrollment-count","/courses/{courseId}/enrollment-count","/instructor/{instructorId}","/feedback/instructor/{instructorId}/feedback-count", "/auth/signup","/feedback/course/{courseId}","/feedback/course/{courseId}/average-rating","/feedback/all","instructor/average-rating", "/courses", "/auth/check-username", "/auth/check-email", "/swagger-ui/**", "/v3/api-docs/**")
-                    .permitAll()
+                .requestMatchers(
+                    "/auth/login",
+                    "/auth/signup",
+                    "/auth/check-username",
+                    "/auth/check-email",
+                    "/courses",
+                    "/courses/highest-enrolled-users-count",
+                    "/instructor/{instructorId}/courses",
+                    "/instructor/proxy-image",
+                    "/instructor/{instructorId}/highest-enrolled-courses",
+                    "/instructor/{instructorId}",
+                    "/instructor/{instructorId}/enrollment-count",
+                    "/courses/{courseId}/enrollment-count",
+                    "/feedback/highest-rated-courses",
+                    "/feedback/course/{courseId}",
+                    "/feedback/course/{courseId}/average-rating",
+                    "/feedback/all",
+                    "/feedback/instructor/{instructorId}/feedback-count",
+                    "/instructor/average-rating",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/admin/add-bcrypt-prefix"
+                ).permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/courses/enrolled-courses").hasAnyRole("USER", "ADMIN") 
-
+                .requestMatchers("/courses/enrolled-courses").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
