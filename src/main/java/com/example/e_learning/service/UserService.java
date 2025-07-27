@@ -7,7 +7,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.example.e_learning.dto.SignupRequest;
 import com.example.e_learning.dto.UserDTO;
 import com.example.e_learning.entity.User;
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 
 @Service
 public class UserService implements UserDetailsService {
@@ -51,7 +49,7 @@ public class UserService implements UserDetailsService {
         user.setName(signupRequest.getName());
         user.setEmail(signupRequest.getEmail());
         user.setUsername(signupRequest.getUsername());
-        user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+        user.setPassword(passwordEncoder.encode(signupRequest.getPassword())); // Removed {bcrypt} prefix
         user.setRole("USER");
 
         try {
@@ -115,7 +113,7 @@ public class UserService implements UserDetailsService {
         }
 
         if (updatedUser.getPassword() != null && !updatedUser.getPassword().trim().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+            user.setPassword(passwordEncoder.encode(updatedUser.getPassword())); // Removed {bcrypt} prefix
         }
 
         userRepository.save(user);

@@ -5,58 +5,95 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private UserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String username;
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+            throws ServletException, IOException {
+        // Set CORS headers for all responses
+        res.setHeader("Access-Control-Allow-Origin", "https://e-learning-management.netlify.app");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "*");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+        // Handle CORS preflight request
+        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
+            res.setStatus(HttpServletResponse.SC_OK);
+            logger.debug("Handled CORS preflight request for {}", req.getRequestURI());
             return;
         }
 
-        jwt = authHeader.substring(7);
-        username = jwtService.extractUsername(jwt);
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            if (jwtService.validateToken(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
+        // Skip JWT processing for public endpoints
+        String path = req.getRequestURI();
+        if (isPublicEndpoint(path)) {
+            logger.debug("Skipping JWT processing for public endpoint: {}", path);
+            chain.doFilter(req, res);
+            return;
         }
 
-        filterChain.doFilter(request, response);
+        String authHeader = req.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String jwt = authHeader.substring(7);
+            String username = jwtService.extractUsername(jwt);
+
+            if (username == null) {
+                logger.warn("No username extracted from JWT for path: {}", path);
+            } else if (!jwtService.isTokenValid(jwt)) {
+                logger.warn("Invalid or expired JWT for user: {} on path: {}", username, path);
+            } else if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                String role = jwtService.extractClaim(jwt, claims -> claims.get("role", String.class));
+                if (role != null) {
+                    var authorities = List.of(new SimpleGrantedAuthority(role));
+                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                            username, null, authorities);
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                    logger.debug("Authenticated user: {} with role: {} for path: {}", username, role, path);
+                } else {
+                    logger.warn("No role found in JWT for user: {} on path: {}", username, path);
+                }
+            }
+        } else {
+            logger.debug("No valid Authorization header for path: {}", path);
+        }
+
+        chain.doFilter(req, res);
+    }
+
+    private boolean isPublicEndpoint(String path) {
+        String[] publicEndpoints = {
+            "/auth/login", "/auth/signup", "/auth/check-username", "/auth/check-email",
+            "/courses", "/courses/highest-enrolled-users-count",
+            "/instructor/**", "/feedback/**", "/swagger-ui/**", "/v3/api-docs/**", "/test/**","/admin/add-bcrypt-prefix"
+        };
+        for (String endpoint : publicEndpoints) {
+            if (path.startsWith(endpoint)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
