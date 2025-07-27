@@ -313,6 +313,9 @@ public class CourseController {
     public ResponseEntity<List<EnrollmentDTO>> getEnrolled(
         @Parameter(description = "Authenticated user's principal", hidden = true) 
         Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Collections.emptyList());
+        }
         try {
             User currentUser = userService.findByUsername(principal.getName())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
