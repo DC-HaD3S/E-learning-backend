@@ -95,7 +95,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/admin/add-bcrypt-prefix"
         };
         for (String endpoint : publicEndpoints) {
-            if (path.equals(endpoint) || path.startsWith(endpoint + "/")) {
+            // Exact match for /courses to avoid matching /courses/enrolled-courses
+            if (endpoint.equals("/courses") ? path.equals("/courses") : path.startsWith(endpoint)) {
                 return true;
             }
         }
